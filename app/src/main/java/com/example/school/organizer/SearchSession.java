@@ -134,10 +134,10 @@ public class SearchSession implements Serializable{
      * null.
      */
     public Address getNearestAddress(Location location) {
+        if(countCheckAddresses() == 0) {
+            return null;
+        }
         if (getSearchedAddresses().size() > 1) {
-            if(countCheckAddresses() == 0) {
-                return null;
-            }
             Address adr;
             Address nearestAddress = getFirstCheckedAddress();
             float nearestDistance[] = new float[2];
