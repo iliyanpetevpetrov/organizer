@@ -232,13 +232,15 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     Address nearestAdr = currentAddress.getNearestAddress(location);
+                                    if(nearestAdr != null) {
 
-                                    Uri gmmIntentUri = Uri.parse("google.navigation:q=" +
-                                            nearestAdr.getLatitude() + "," +
-                                            nearestAdr.getLongitude() );
-                                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                                    mapIntent.setPackage("com.google.android.apps.maps");
-                                    startActivity(mapIntent);
+                                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" +
+                                                nearestAdr.getLatitude() + "," +
+                                                nearestAdr.getLongitude());
+                                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                                        mapIntent.setPackage("com.google.android.apps.maps");
+                                        startActivity(mapIntent);
+                                    }
                                 }
                             });
 
@@ -312,17 +314,13 @@ public class MainActivity extends AppCompatActivity {
         final ArrayList<Integer> mSelectedItems = new ArrayList();  // Where we track the selected items
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        boolean[] alreadyCheckedItems = new boolean[appointmentsTodoList.get(position).getSearchedAddresses().size()];
+        boolean[] alreadyCheckedItems = appointmentsTodoList.get(position).getIsChecked();
 
         ArrayList<Address> listAddresses = appointmentsTodoList.get(position).getSearchedAddresses();
 
         String strings[] = new String[appointmentsTodoList.get(position).getSearchedAddresses().size()];
         for (int i = 0; i < strings.length; i++) {
             strings[i] = new String();
-        }
-
-        for (int i = 0; i < appointmentsTodoList.get(position).getSearchedAddresses().size(); i++) {
-            alreadyCheckedItems[i] = appointmentsTodoList.get(position).isSearchOn();
         }
 
         for (int i = 0; i <listAddresses.size(); i++) {
@@ -368,6 +366,11 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+
+        for (Integer i:mSelectedItems) {
+            alreadyCheckedItems[i] = true;
+        }
+        appointmentsTodoList.get(position).setIsChecked(alreadyCheckedItems);
 
         return builder.create();
     }
@@ -474,7 +477,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-//            return /*(appointmentsTodoList.size() == 0 ? 1: appointmentsTodoList.size() )*/;
             return appointmentsTodoList.size();
         }
     }

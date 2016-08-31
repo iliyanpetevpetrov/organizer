@@ -26,11 +26,20 @@ public class SearchSession implements Serializable{
     private String note;
     private boolean isSearchOn = true;
     private long endMuteTime = 0;
+    private boolean[] isChecked;
 
     public SearchSession(ArrayList<Address> searchedAddresses, String note, boolean isSearchOn) {
         this.searchedAddresses = searchedAddresses;
         this.note = note;
         this.isSearchOn = isSearchOn;
+        isChecked = new boolean[searchedAddresses.size()];
+        initBooleanArrayListWithPositive();
+    }
+
+    private void initBooleanArrayListWithPositive() {
+        for (int i = 0; i < isChecked.length; i++) {
+            isChecked[i] = true;
+        }
     }
 
     public ArrayList<Address> getSearchedAddresses() {
@@ -59,21 +68,23 @@ public class SearchSession implements Serializable{
 
     @Override
     public String toString() {
-        return String.format("%s\nMarked locations: %d."
-                , getNote(), getSearchedAddresses().size());
+        return String.format("%s\nMarked locations: %d from %d total."
+                , getNote(), countCheckAddresses() ,getSearchedAddresses().size());
     }
 
     private int countCheckAddresses() {
         int countCheckedAddresses = 0;
-        for (int i = 0; i < searchedAddresses.size(); i++) {
-            searchedAddresses.get(i).
+        for (int i = 0; i < isChecked.length; i++) {
+            if(isChecked[i]) countCheckedAddresses++;
         }
 
+        return countCheckedAddresses;
     }
 
     public CharSequence getSpannableToString() {
         String text1 = getNote();
-        String text2 = "Marked locations: " + getSearchedAddresses().size();
+        String text2 = "Marked locations " + countCheckAddresses() + " from "
+                + getSearchedAddresses().size() +" total.";
 
         SpannableString span1 = new SpannableString(text1);
         span1.setSpan(new AbsoluteSizeSpan(75), 0, text1.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
@@ -82,10 +93,10 @@ public class SearchSession implements Serializable{
 
 
         SpannableString span2 = new SpannableString(text2);
-        span2.setSpan(new AbsoluteSizeSpan(55), 0, text2.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        span2.setSpan(new AbsoluteSizeSpan(45), 0, text2.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
         span2.setSpan(new ForegroundColorSpan(Color.GRAY), 0, text2.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 
-// let's put both spans together with a separator and all
+        // let's put both spans together with a separator and all
         CharSequence finalText = TextUtils.concat(span1, "\n" , span2);
         return finalText;
     }
@@ -94,9 +105,19 @@ public class SearchSession implements Serializable{
         this.isSearchOn = !isSearchOn;
     }
 
+    /**
+     * Checks if current location is near radiusInMeter to the nearest location from
+     * searchedAddresses.
+     * @param location second point to calculate distance
+     * @param radiusInMeter the distance limit to the location
+     * @return true if radiusInMeter >= to the distance from the location, otherwise it returns false
+     */
     public boolean isNear(Location location, float radiusInMeter) {
         float distance[] = new float[2];
         Address nearestAddress = getNearestAddress(location);
+        if ( nearestAddress == null ) {
+            return false;
+        }
 
         Location.distanceBetween(location.getLatitude(), location.getLongitude(),
                 nearestAddress.getLatitude(), nearestAddress.getLongitude(),
@@ -105,9 +126,20 @@ public class SearchSession implements Serializable{
         return radiusInMeter >= distance[0];
     }
 
+    /**
+     * The method is going to return the nearest address, from the checked addresses according to
+     * (isChecked[]), by the location given.
+     * @param location location point from which is goint to measure the distance
+     * @return returns the nearest address. If there is no active addresses to search it will return
+     * null.
+     */
     public Address getNearestAddress(Location location) {
-        if (getSearchedAddresses().size() > 2) {
-            Address nearestAddress = getSearchedAddresses().get(0);
+        if (getSearchedAddresses().size() > 1) {
+            if(countCheckAddresses() == 0) {
+                return null;
+            }
+            Address adr;
+            Address nearestAddress = getFirstCheckedAddress();
             float nearestDistance[] = new float[2];
             float currentDistance[] = new float[2];
 
@@ -116,7 +148,13 @@ public class SearchSession implements Serializable{
                     nearestAddress.getLatitude(), nearestAddress.getLongitude(),
                     nearestDistance);
 
-            for (Address adr: getSearchedAddresses()) {
+            for (int i = 0; i < searchedAddresses.size(); i++) {
+                if(this.isChecked[i]) {
+                    adr = searchedAddresses.get(i);
+                } else {
+                    continue;
+                }
+
                 Location.distanceBetween(
                         location.getLatitude(), location.getLongitude(),
                         adr.getLatitude(), adr.getLongitude(), currentDistance);
@@ -133,9 +171,27 @@ public class SearchSession implements Serializable{
         return getSearchedAddresses().get(0);
     }
 
+    /**
+     * Will return the firstCheckedAddress. Returns null when there is no checked addresses.
+     * @return Address - the firstCheckedAddress. Returns null when there is no checked addresses.
+     */
+    private Address getFirstCheckedAddress() {
+        Address firstCheckedAddress = null;
+
+        for (int i = 0; i < isChecked.length; i++) {
+            if(isChecked[i]) {
+                firstCheckedAddress = searchedAddresses.get(i);
+            }
+        }
+
+        return firstCheckedAddress;
+    }
+
     public float[] getDistanceBetweenLocation(Location location) {
         Address nearestAddress = getNearestAddress(location);
-
+        if(nearestAddress == null) {
+            return  null;
+        }
         float distance[] = new float[2];
 
         Location.distanceBetween(location.getLatitude(), location.getLongitude(),
@@ -168,5 +224,13 @@ public class SearchSession implements Serializable{
 
     public long getEndMuteTime() {
         return endMuteTime;
+    }
+
+    public boolean[] getIsChecked() {
+        return isChecked;
+    }
+
+    public void setIsChecked(boolean[] isChecked) {
+        this.isChecked = isChecked;
     }
 }
