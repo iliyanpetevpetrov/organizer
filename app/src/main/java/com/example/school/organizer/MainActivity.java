@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -20,6 +21,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,22 +31,18 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
 
     private ListView appointmentsListView;
 
-    private ArrayAdapter<SearchSession> listAdapter;
+    private SelectArralAdapter listAdapter;
 
     FloatingActionButton fTurnOnOff;
 
@@ -55,15 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
     TinyDB tinydb;
 
-    ArrayList<SearchSession> searchSession = new ArrayList<>();
-
-    //TODO: try without initialization
-    ArrayList<SearchSession> appointmentsTodoList;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
+    ArrayList<SearchSession> appointmentsTodoList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
