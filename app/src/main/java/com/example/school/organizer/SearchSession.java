@@ -72,7 +72,7 @@ public class SearchSession implements Serializable{
                 , getNote(), countCheckAddresses() ,getSearchedAddresses().size());
     }
 
-    private int countCheckAddresses() {
+    public int countCheckAddresses() {
         int countCheckedAddresses = 0;
         for (int i = 0; i < isChecked.length; i++) {
             if(isChecked[i]) countCheckedAddresses++;
