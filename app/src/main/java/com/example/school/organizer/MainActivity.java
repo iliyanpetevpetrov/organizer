@@ -322,11 +322,14 @@ public class MainActivity extends AppCompatActivity {
                 Toast.LENGTH_LONG).show();
     }
 
-    public Dialog onEditDialog(int position) {
+    public Dialog onEditDialog(final int position) {
         final ArrayList<Integer> mSelectedItems = new ArrayList();  // Where we track the selected items
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         boolean[] alreadyCheckedItems = appointmentsTodoList.get(position).getIsChecked();
+
+        final boolean[] copiedCheckedItems = Arrays.copyOf(appointmentsTodoList.get(position).getIsChecked(),
+                appointmentsTodoList.get(position).getIsChecked().length);
 
         ArrayList<Address> listAddresses = appointmentsTodoList.get(position).getSearchedAddresses();
 
@@ -369,22 +372,25 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the mSelectedItems results somewhere
                         // or return them to the component that opened the dialog
-
+                        if(appointmentsTodoList.get(position).countCheckAddresses() == 0) {
+                            appointmentsTodoList.get(position).setSearchOn(false);
+                        }
+                        listAdapter.refresh(appointmentsTodoList);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-
+                        changeCheckedAddresses(copiedCheckedItems, position);
+                        listAdapter.refresh(appointmentsTodoList);
                     }
                 });
-
-        for (Integer i:mSelectedItems) {
-            alreadyCheckedItems[i] = true;
-        }
-        appointmentsTodoList.get(position).setIsChecked(alreadyCheckedItems);
-
         return builder.create();
+    }
+
+    private void changeCheckedAddresses(boolean[] checkedNumbers, int position) {
+        appointmentsTodoList.get(position).setIsChecked(checkedNumbers);
+        listAdapter.refresh(appointmentsTodoList);
     }
 
     @Override
