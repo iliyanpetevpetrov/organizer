@@ -48,8 +48,8 @@ public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton fTurnOnOff;
 
-    public static String DEFAULT_EMPTY_STRING_APPOINTMENT_LIST = "Click me.\n" +
-            "Now try to delete me\nwith long click.";
+    public static String DEFAULT_EMPTY_STRING_APPOINTMENT_LIST = "1. Click me.\n" +
+            "2. Now try to delete me\nwith long click.";
 
     private boolean isOn = false;
 
