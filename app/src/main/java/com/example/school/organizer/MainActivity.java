@@ -435,6 +435,13 @@ public class MainActivity extends AppCompatActivity {
             this.searchedSession = (ArrayList<SearchSession>) planetList;
         }
 
+        public void refresh(ArrayList<SearchSession> items) {
+            this.searchedSession = new ArrayList<>(items);
+            this.searchedSession.clear();
+            this.searchedSession = items;
+            this.notifyDataSetChanged();
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             // Planet to display
