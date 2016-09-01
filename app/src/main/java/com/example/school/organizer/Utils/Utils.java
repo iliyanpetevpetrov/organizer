@@ -9,10 +9,20 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by Jeff's world on 8/28/2016.
+ * Created by Iliyan Petrov on 8/28/2016.
+ * Helper class when working with custom ListView and custom Adapter.
+ *
+ * @see com.example.school.organizer.MapsActivity.SelectArralAdapter
+ * @see com.example.school.organizer.SelectViewHolder
  */
 public class Utils {
 
+    /**
+     * Will remove not checked elements from addressFromName according to addresses.
+     * @param addressesFromName ArrayList with Address that are going to be reduced on @addresses base
+     * @param addresses Checked items from the UI ListView
+     * @see Address
+     */
     public static void leaveOnlyCheckedAddresses(ArrayList<Address> addressesFromName,
                                            ArrayList<AddressRow> addresses){
         if ( addresses.size() > 0 ) {
@@ -29,13 +39,17 @@ public class Utils {
         }
     }
 
+    /**
+     * Will convert List with Address to ArrayList with AddressRow
+     * @param source source List
+     * @param target target ArrayList
+     */
     public static synchronized void convertArrayAddressToArrayString(List<Address> source, ArrayList<AddressRow> target) {
         StringBuilder addressLine = new StringBuilder();
 
         if (source != null && target != null) {
             int counter = 1;
 
-//            for(Address object: source) {
             for (int i = target.size(); i < source.size(); i++) {
                 Address object = source.get(i);
 
@@ -49,7 +63,6 @@ public class Utils {
                 counter++;
             }
         }
-
     }
 
 }
