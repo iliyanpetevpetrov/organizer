@@ -63,8 +63,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         tinydb = new TinyDB(this);
 
+        appointmentsTodoList.clear();
         //Initialize arrayList for main list view
-        appointmentsTodoList = tinydb.getListSearchSession("appointmentsTodoList", SearchSession.class);
+        appointmentsTodoList.addAll(tinydb.getListSearchSession("appointmentsTodoList", SearchSession.class));
 
         boolean isSuccessfulSearch = tinydb.getBoolean("isSuccessfulSearch");
 
@@ -76,12 +77,17 @@ public class MainActivity extends AppCompatActivity {
             //Prevent adding the same searchSession when rotating the phone
             tinydb.putBoolean("isSuccessfulSearch", false);
         }
+
         tinydb.putListSearchSession("appointmentsTodoList", appointmentsTodoList);
 
         if (appointmentsTodoList.size() == 0) {
+            ArrayList<Address> tmp = new ArrayList<Address>();
+
             appointmentsTodoList.add(new SearchSession(
-                    new ArrayList<Address>(), DEFAULT_EMPTY_STRING_APPOINTMENT_LIST, false));
+                    tmp, DEFAULT_EMPTY_STRING_APPOINTMENT_LIST, false));
         }
+
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
@@ -168,7 +174,10 @@ public class MainActivity extends AppCompatActivity {
                         });
 
                 builder.create().show();
+
+                listAdapter.notifyDataSetChanged();
                 listAdapter.refresh(appointmentsTodoList);
+
                 return true;
             }
         });
@@ -178,9 +187,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 SearchSession searchSession = listAdapter.getItem(position);
-                if (!searchSession.getNote().equals(DEFAULT_EMPTY_STRING_APPOINTMENT_LIST)) {
-                    searchSession.toggleChecked();
-                }
+                searchSession.toggleChecked();
                 SelectViewHolder viewHolder = (SelectViewHolder) view.getTag();
 
                 viewHolder.getCheckBox().setChecked(searchSession.isSearchOn());
@@ -207,8 +214,10 @@ public class MainActivity extends AppCompatActivity {
                         final int innerCounter = counter;
                         final SearchSession currentAddress = appointmentsTodoList.get(counter);
 
-                        if (currentAddress.isSearchOn() && !currentAddress.isMute()
-                                && currentAddress.isNear(location, 1000)) {
+
+                        if (    currentAddress.isSearchOn() &&
+                                !currentAddress.isMute()  &&
+                                currentAddress.isNear(location, 1000)) {
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
@@ -237,6 +246,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     appointmentsTodoList.get(innerCounter).mute();
+                                    showMessageForMutedAppointment(innerCounter);
                                 }
                             });
 
@@ -256,10 +266,7 @@ public class MainActivity extends AppCompatActivity {
 
                             dialog.show();
 
-                            Toast.makeText(MainActivity.this,
-                                    "Location is " + currentAddress.getDistanceBetweenLocation(location)[0] +
-                                            " away.",
-                                    Toast.LENGTH_LONG).show();
+                            break;
                         }
                     }
                 }
@@ -392,12 +399,27 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        appointmentsTodoList = tinydb.getListSearchSession("appointmentsTodoList", SearchSession.class);
-        appointmentsListView.invalidateViews();
+//        listAdapter.clear();
+        appointmentsTodoList.clear();
+        appointmentsTodoList.addAll(tinydb.getListSearchSession("appointmentsTodoList", SearchSession.class));
+//        appointmentsListView.invalidateViews();
 
-        listAdapter = new SelectArralAdapter(this, appointmentsTodoList);
+//        listAdapter = new SelectArralAdapter(this, appointmentsTodoList);
+//        listAdapter.refresh(appointmentsTodoList);
 
-        listAdapter.notifyDataSetChanged();
+        boolean isSuccessfulSearch = tinydb.getBoolean("isSuccessfulSearch");
+
+        if (isSuccessfulSearch) {
+            ArrayList<SearchSession> tmpSearchSession =
+                    tinydb.getListSearchSession("searchedSession", SearchSession.class);
+            appointmentsTodoList.addAll(tmpSearchSession);
+
+            //Prevent adding the same searchSession when rotating the phone
+            tinydb.putBoolean("isSuccessfulSearch", false);
+        }
+
+        listAdapter.refresh(appointmentsTodoList);
+
     }
 
 
@@ -405,14 +427,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         tinydb.putListSearchSession("appointmentsTodoList", appointmentsTodoList);
-
-        appointmentsListView.invalidateViews();
-
         tinydb.putBoolean("isOn", isOn);
     }
 
-
     public void turnOnOff(View v) {
+        listAdapter.notifyDataSetChanged();
         isOn = !isOn;
         changeBtnTurnOffOnColor(isOn);
 
@@ -442,6 +461,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void refresh(ArrayList<SearchSession> items) {
+//            this.searchedSession.clear();
             this.searchedSession = new ArrayList<>(items);
             this.searchedSession.clear();
             this.searchedSession = items;
@@ -497,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return appointmentsTodoList.size();
+            return searchedSession.size();
         }
     }
 
