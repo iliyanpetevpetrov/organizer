@@ -122,6 +122,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -242,20 +243,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onPause() {
         super.onPause();
+        tinyDB = new TinyDB(this);
+        ArrayList<SearchSession> searchedSession = new ArrayList<SearchSession>();
 
         leaveOnlyCheckedAddresses(addressList, addressRows);
 
-        tinyDB = new TinyDB(this);
+        // The note filed is required and if it is empty the appointment won't be saved
+        if (!edNote.getText().toString().isEmpty() && !addressList.isEmpty()) {
+            searchedSession.add(new SearchSession(addressList, edNote.getText().toString(), true));
+            tinyDB.putListSearchSession("searchedSession", searchedSession);
+        } else {
+            Toast.makeText(MapsActivity.this, "Appointment not saved because empty note or " +
+                    "not selected addresses.",
+                    Toast.LENGTH_LONG).show();
+        }
 
-        tinyDB.putListAddress("checkedAdr", addressList);
-
-        ArrayList<SearchSession> ss = new ArrayList<SearchSession>();
-
-        //TODO: To remove it
-        if (!edNote.getText().toString().isEmpty())
-        ss.add(new SearchSession(addressList, edNote.getText().toString(), true));
-
-        tinyDB.putListSearchSession("searchedSession", ss);
+        boolean isSuccessfulSearch = !searchedSession.isEmpty();
+        tinyDB.putBoolean("isSuccessfulSearch", isSuccessfulSearch);
     }
 
     public void save(View v){
