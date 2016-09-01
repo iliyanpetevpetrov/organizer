@@ -239,23 +239,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        leaveOnlyCheckedAddresses(addressList, addressRows);
-        tinyDB = new TinyDB(this);
-        boolean isSuccessfulSearch = !addressList.isEmpty();
-
-        if(isSuccessfulSearch) {
-            tinyDB.putListAddress("checkedAdr", addressList);
-
-        }
-        tinyDB.putBoolean("isSuccessfulSearch", isSuccessfulSearch);
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
