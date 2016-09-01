@@ -158,22 +158,15 @@ public class MainActivity extends AppCompatActivity {
                                         break;
                                     case 4:
                                         appointmentsTodoList.get(position).mute();
-                                        SimpleDateFormat formatter =
-                                                new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-
-                                        // Create a calendar object that will convert the date and time value in milliseconds to date.
-                                        Calendar calendar = Calendar.getInstance();
-                                        calendar.setTimeInMillis(appointmentsTodoList.get(position).getEndMuteTime());
-                                        Toast.makeText(MainActivity.this,
-                                                "The appointment is muted until " +
-                                                formatter.format(calendar.getTime()),
-                                                Toast.LENGTH_SHORT).show();
+                                        showMessageForMutedAppointment(position);
                                         break;
                                     case 5:
                                         appointmentsTodoList.get(position).unmute();
                                         Toast.makeText(MainActivity.this,
-                                                "The appointment is unmuted.",
-                                                Toast.LENGTH_SHORT).show();
+                                                "The appointment "+"\"" +
+                                                appointmentsTodoList.get(position).getNote()
+                                                + "\" is unmuted.",
+                                                Toast.LENGTH_LONG).show();
                                         break;
                                 }
                                 listAdapter.notifyDataSetChanged();
@@ -310,6 +303,19 @@ public class MainActivity extends AppCompatActivity {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 20, locationListener);
     }
 
+    private void showMessageForMutedAppointment(int position) {
+        SimpleDateFormat formatter =
+                new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+
+        // Create a calendar object that will convert the date and time value in milliseconds to date.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(appointmentsTodoList.get(position)
+                .getEndMuteTime());
+        Toast.makeText(MainActivity.this,
+                "The appointment " +"\"" + appointmentsTodoList.get(position).getNote() + "\"" +
+                        " is muted until " + formatter.format(calendar.getTime()),
+                Toast.LENGTH_LONG).show();
+    }
 
     public Dialog onEditDialog(int position) {
         final ArrayList<Integer> mSelectedItems = new ArrayList();  // Where we track the selected items
