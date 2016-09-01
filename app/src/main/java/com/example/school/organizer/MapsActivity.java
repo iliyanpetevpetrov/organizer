@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -31,7 +30,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,11 +40,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
 
-    ArrayList<String> arrList = new ArrayList<>();
-
-    //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
-    ArrayAdapter<String> adapter;
-
     private ArrayAdapter<AddressRow> listAdapter;
 
     //ListView with locations
@@ -55,20 +48,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //List with addressRows that were searched
     ArrayList<Address> addressList = new ArrayList<>();
 
-    int curSelected;
-
     // List with addressRow for the custom listView + checkbox
     ArrayList<AddressRow> addressRows = new ArrayList<>();
 
-    ArrayList<AddressRow> checkedAddresses = new ArrayList<>();
-
     EditText edLocation;
 
-    int numberOfChecked = 0;
-
     HashMap<LatLng,Marker> markers = new HashMap<>();
-
-    Context context = this;
 
     TinyDB tinyDB;
 
@@ -104,9 +89,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 viewHolder.getCheckBox().setChecked(addressRow.isChecked());
 
                 if (addressList != null) {
-//                    if (addressList.size() != addressRows.size()) {
-//                        position -= addressList.size() - addressList.size() + 2;
-//                    }
                     latitude = addressList.get(position).getLatitude();
                     longitude = addressList.get(position).getLongitude();
                     currentLatLng = new LatLng(latitude, longitude);
@@ -140,8 +122,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -161,11 +141,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
-//// Search for restaurants nearby
-//        Uri gmmIntentUri = Uri.parse("geo:0,0?q=restaurants");
-//        Intent mapIntent = new Intent(Intent.ACTION_VIEW);
-//        mapIntent.setPackage("com.google.android.apps.maps");
-//        startActivity(mapIntent);
     }
 
     public void onSearch(View view) {
@@ -174,7 +149,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         listLocations.setVisibility(View.VISIBLE);
 
-        if(location != null || !location.isEmpty() ) {
+        if(location != null || !location.isEmpty()) {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
             if( addressList.size() != 0 ) {
@@ -207,8 +182,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static class SelectArralAdapter extends ArrayAdapter<AddressRow> {
         private LayoutInflater inflater;
 
-        public SelectArralAdapter(Context context, List<AddressRow> planetList) {
-            super(context, R.layout.simple_row_location_search, R.id.rowTextView, planetList);
+        public SelectArralAdapter(Context context, List<AddressRow> list) {
+            super(context, R.layout.simple_row_location_search, R.id.rowTextView, list);
             // Cache the LayoutInflate to avoid asking for a new one each time.
             inflater = LayoutInflater.from(context);
         }
@@ -251,14 +226,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 textView = viewHolder.getTextView();
             }
 
-            // Tag the CheckBox with the Planet it is displaying, so that we can
-            // access the planet in onClick() when the CheckBox is toggled.
+            // Tag the CheckBox with the addressRow it is displaying, so that we can
+            // access the addressRow in onClick() when the CheckBox is toggled.
             checkBox.setTag(addressRow);
-            // Display planet data
+            // Display addressRow data
             checkBox.setChecked(addressRow.isChecked());
-            if (addressRow.getTitle().equals("Nothig here.")) {
-                checkBox.setEnabled(false);
-            }
+
             textView.setText(addressRow.getTitle());
             return convertView;
         }
