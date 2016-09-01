@@ -146,19 +146,24 @@ public class MainActivity extends AppCompatActivity {
                                 switch (which) {
                                     case 0:
                                         appointmentsTodoList.get(position).setSearchOn(true);
+                                        listAdapter.refresh(appointmentsTodoList);
                                         break;
                                     case 1:
                                         appointmentsTodoList.get(position).setSearchOn(false);
+                                        listAdapter.refresh(appointmentsTodoList);
                                         break;
                                     case 2:
                                         onEditDialog(position).show();
+                                        listAdapter.refresh(appointmentsTodoList);
                                         break;
                                     case 3:
                                         appointmentsTodoList.remove(position);
+                                        listAdapter.refresh(appointmentsTodoList);
                                         break;
                                     case 4:
                                         appointmentsTodoList.get(position).mute();
                                         showMessageForMutedAppointment(position);
+                                        listAdapter.refresh(appointmentsTodoList);
                                         break;
                                     case 5:
                                         appointmentsTodoList.get(position).unmute();
@@ -169,11 +174,11 @@ public class MainActivity extends AppCompatActivity {
                                                 Toast.LENGTH_LONG).show();
                                         break;
                                 }
-                                listAdapter.notifyDataSetChanged();
                             }
                         });
 
                 builder.create().show();
+                listAdapter.refresh(appointmentsTodoList);
                 return true;
             }
         });
