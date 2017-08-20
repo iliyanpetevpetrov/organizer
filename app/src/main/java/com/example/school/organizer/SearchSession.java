@@ -2,11 +2,8 @@ package com.example.school.organizer;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.icu.util.Calendar;
-import android.icu.util.GregorianCalendar;
 import android.location.Address;
 import android.location.Location;
-import android.os.Parcelable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -20,7 +17,7 @@ import java.util.ArrayList;
 /**
  * Created by Jeff's world on 8/29/2016.
  */
-public class SearchSession implements Serializable{
+public class SearchSession implements Serializable {
 
     private ArrayList<Address> searchedAddresses;
     private String note;
@@ -137,9 +134,9 @@ public class SearchSession implements Serializable{
         if(countCheckAddresses() == 0) {
             return null;
         }
+        Address nearestAddress = getFirstCheckedAddress();
         if (getSearchedAddresses().size() > 1) {
             Address adr;
-            Address nearestAddress = getFirstCheckedAddress();
             float nearestDistance[] = new float[2];
             float currentDistance[] = new float[2];
 
@@ -164,11 +161,9 @@ public class SearchSession implements Serializable{
                     nearestDistance[0] = currentDistance[0];
                 }
             }
-
-            return nearestAddress;
         }
 
-        return getSearchedAddresses().get(0);
+        return nearestAddress;
     }
 
     /**
@@ -176,15 +171,12 @@ public class SearchSession implements Serializable{
      * @return Address - the firstCheckedAddress. Returns null when there is no checked addresses.
      */
     private Address getFirstCheckedAddress() {
-        Address firstCheckedAddress = null;
-
         for (int i = 0; i < isChecked.length; i++) {
             if(isChecked[i]) {
-                firstCheckedAddress = searchedAddresses.get(i);
+                return searchedAddresses.get(i);
             }
         }
-
-        return firstCheckedAddress;
+        return null;
     }
 
     public float[] getDistanceBetweenLocation(Location location) {

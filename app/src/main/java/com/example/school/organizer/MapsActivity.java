@@ -111,13 +111,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
         });
-
         listAdapter = new SelectArralAdapter(this, addressRows);
-
         listLocations.setAdapter(listAdapter);
-
     }
-
 
     /**
      * Manipulates the map once available.
@@ -258,8 +254,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Toast.LENGTH_LONG).show();
         }
 
-        boolean isSuccessfulSearch = !searchedSession.isEmpty();
-        tinyDB.putBoolean("isSuccessfulSearch", isSuccessfulSearch);
+        tinyDB.putBoolean("isSuccessfulSearch", !searchedSession.isEmpty());
     }
 
     public void save(View v){

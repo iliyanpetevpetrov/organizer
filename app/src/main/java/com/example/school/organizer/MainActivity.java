@@ -21,7 +21,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,29 +30,27 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private ListView appointmentsListView;
-
-    private SelectArralAdapter listAdapter;
-
-    FloatingActionButton fTurnOnOff;
-
     public static String DEFAULT_EMPTY_STRING_APPOINTMENT_LIST = "1. Click me.\n" +
             "2. Now try to delete me\nwith long click.";
-
-    private boolean isOn = false;
-
+    FloatingActionButton fTurnOnOff;
     TinyDB tinydb;
-
     ArrayList<SearchSession> appointmentsTodoList = new ArrayList<>();
+    LocationManager locationManager = null;
+    Bundle bndl = new Bundle();
+    private ListView appointmentsListView;
+    private SelectArralAdapter listAdapter;
+    private boolean isOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         tinydb = new TinyDB(this);
-
         appointmentsTodoList.clear();
         //Initialize arrayList for main list view
         appointmentsTodoList.addAll(tinydb.getListSearchSession("appointmentsTodoList", SearchSession.class));
@@ -71,14 +67,14 @@ public class MainActivity extends AppCompatActivity {
 
         if (isSuccessfulSearch) {
             ArrayList<SearchSession> tmpSearchSession =
-                    tinydb.getListSearchSession("searchedSession", SearchSession.class);
+                    tinydb.getListSearchSession("mSearchedSession", SearchSession.class);
             appointmentsTodoList.addAll(tmpSearchSession);
-
+//TODO: uncomment
+//            tinydb.putListSearchSession("appointmentsTodoList", appointmentsTodoList);
             //Prevent adding the same searchSession when rotating the phone
             tinydb.putBoolean("isSuccessfulSearch", false);
         }
 
-        tinydb.putListSearchSession("appointmentsTodoList", appointmentsTodoList);
 
         if (appointmentsTodoList.size() == 0) {
             ArrayList<Address> tmp = new ArrayList<Address>();
@@ -86,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
             appointmentsTodoList.add(new SearchSession(
                     tmp, DEFAULT_EMPTY_STRING_APPOINTMENT_LIST, false));
         }
-
-
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
@@ -164,9 +158,9 @@ public class MainActivity extends AppCompatActivity {
                                     case 5:
                                         appointmentsTodoList.get(position).unmute();
                                         Toast.makeText(MainActivity.this,
-                                                "The appointment "+"\"" +
-                                                appointmentsTodoList.get(position).getNote()
-                                                + "\" is unmuted.",
+                                                "The appointment " + "\"" +
+                                                        appointmentsTodoList.get(position).getNote()
+                                                        + "\" is unmuted.",
                                                 Toast.LENGTH_LONG).show();
                                         break;
                                 }
@@ -195,14 +189,13 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-
         listAdapter = new SelectArralAdapter(this, appointmentsTodoList);
 
         appointmentsListView.setAdapter(listAdapter);
 
         listAdapter.notifyDataSetChanged();
 
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         LocationListener locationListener = new LocationListener() {
             @Override
@@ -214,15 +207,14 @@ public class MainActivity extends AppCompatActivity {
                         final int innerCounter = counter;
                         final SearchSession currentAddress = appointmentsTodoList.get(counter);
 
-
-                        if (    currentAddress.isSearchOn() &&
-                                !currentAddress.isMute()  &&
+                        if (currentAddress.isSearchOn() &&
+                                !currentAddress.isMute() &&
                                 currentAddress.isNear(location, 1000)) {
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
                             String message = String.format("You are %.0f meters away from \"%s\"" +
-                                    " appointment",
+                                            " appointment",
                                     currentAddress.getDistanceBetweenLocation(location)[0],
                                     currentAddress.getNote());
 
@@ -230,8 +222,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     Address nearestAdr = currentAddress.getNearestAddress(location);
-                                    if(nearestAdr != null) {
-
+                                    if (nearestAdr != null) {
                                         Uri gmmIntentUri = Uri.parse("google.navigation:q=" +
                                                 nearestAdr.getLatitude() + "," +
                                                 nearestAdr.getLongitude());
@@ -300,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             //
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                         123);
             }
             Toast.makeText(MainActivity.this, "Gps access is denied.", Toast.LENGTH_SHORT).show();
@@ -319,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
         calendar.setTimeInMillis(appointmentsTodoList.get(position)
                 .getEndMuteTime());
         Toast.makeText(MainActivity.this,
-                "The appointment " +"\"" + appointmentsTodoList.get(position).getNote() + "\"" +
+                "The appointment " + "\"" + appointmentsTodoList.get(position).getNote() + "\"" +
                         " is muted until " + formatter.format(calendar.getTime()),
                 Toast.LENGTH_LONG).show();
     }
@@ -340,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
             strings[i] = new String();
         }
 
-        for (int i = 0; i <listAddresses.size(); i++) {
+        for (int i = 0; i < listAddresses.size(); i++) {
             if (listAddresses.get(i).getMaxAddressLineIndex() > 1) {
                 for (int j = 0; j < listAddresses.get(i).getMaxAddressLineIndex(); j++) {
                     strings[i] += listAddresses.get(i).getAddressLine(j) + "\n";
@@ -374,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the mSelectedItems results somewhere
                         // or return them to the component that opened the dialog
-                        if(appointmentsTodoList.get(position).countCheckAddresses() == 0) {
+                        if (appointmentsTodoList.get(position).countCheckAddresses() == 0) {
                             appointmentsTodoList.get(position).setSearchOn(false);
                         }
                         listAdapter.refresh(appointmentsTodoList);
@@ -399,13 +390,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-//        listAdapter.clear();
         appointmentsTodoList.clear();
         appointmentsTodoList.addAll(tinydb.getListSearchSession("appointmentsTodoList", SearchSession.class));
-//        appointmentsListView.invalidateViews();
-
-//        listAdapter = new SelectArralAdapter(this, appointmentsTodoList);
-//        listAdapter.refresh(appointmentsTodoList);
 
         boolean isSuccessfulSearch = tinydb.getBoolean("isSuccessfulSearch");
 
@@ -422,12 +408,64 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
         tinydb.putListSearchSession("appointmentsTodoList", appointmentsTodoList);
         tinydb.putBoolean("isOn", isOn);
+    }
+
+    public void makeRoute(View v) {
+        if (locationManager != null) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                            123);
+                }
+                Toast.makeText(MainActivity.this, "Gps access is denied.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+            if (location == null) {
+                Toast.makeText(MainActivity.this, "Could not find you current location.", Toast
+                        .LENGTH_LONG).show();
+                return;
+            }
+            Address[] path = findShortestPathIncludingAllNodes(location);
+            if (path.length >= 2) {
+                String jsonURL = "https://maps.google.com/maps?";
+                final StringBuffer sBuf = new StringBuffer(jsonURL);
+
+                sBuf.append("saddr=");
+                sBuf.append(path[0].getLatitude());
+                sBuf.append(',');
+                sBuf.append(path[0].getLongitude());
+                sBuf.append("&daddr=");
+                sBuf.append(path[path.length - 1].getLatitude());
+                sBuf.append(',');
+                sBuf.append(path[path.length - 1].getLongitude());
+
+                if (path.length >= 3) {
+                    for (int i = 3; i < path.length; i++) {
+                        sBuf.append("+to:");
+                        sBuf.append(path[i].getLatitude());
+                        sBuf.append(',');
+                        sBuf.append(path[i].getLongitude());
+                    }
+                }
+                sBuf.append("&key=");
+                sBuf.append("");
+
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(sBuf.toString()));
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+            } else {
+                Toast.makeText(MainActivity.this, "Please, enable one or more " +
+                        "appointments.", Toast
+                        .LENGTH_LONG).show();
+            }
+        }
     }
 
     public void turnOnOff(View v) {
@@ -447,24 +485,110 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private Context getActivity() {
+        return this;
+    }
+
+    public ArrayList<Address> getAllNearestActiveAddresses(Location location) {
+        ArrayList<Address> allAddresses = new ArrayList<>();
+
+        //Add first location to be current location
+        Address firstAddress = new Address(new Locale("EN"));
+        firstAddress.setLatitude(location.getLatitude());
+        firstAddress.setLongitude(location.getLongitude());
+        bndl.putString("0", "Current location");
+        allAddresses.add(firstAddress);
+
+        for (int i = 0; i < appointmentsTodoList.size(); i++) {
+            Address tempAdr = appointmentsTodoList.get(i).getNearestAddress(location);
+            bndl.putString(String.valueOf(i + 1), appointmentsTodoList.get(i).getNote());
+            tempAdr.setExtras(bndl);
+            if (tempAdr != null && appointmentsTodoList.get(i).isSearchOn()) {
+                allAddresses.add(tempAdr);
+            }
+        }
+
+        return allAddresses;
+    }
+
+
+    private Address[] findShortestPathIncludingAllNodes(Location location) {
+        ArrayList<Address> allAddresses = getAllNearestActiveAddresses(location);
+        ArrayList<Integer> freePositions = new ArrayList<>(allAddresses.size());
+        Address[] shortestPath = new Address[allAddresses.size()];
+
+        // Initialize path with starting node
+        shortestPath[0] = allAddresses.get(0);
+
+        for (int i = 0; i < allAddresses.size(); i++) {
+            freePositions.add(i);
+        }
+
+        int positionCurrentNode = 0;
+        int size = freePositions.size();
+        for (int i = 0; i < size - 1; i++) {
+            int nextPosition = getNearestAddress(positionCurrentNode, allAddresses, freePositions);
+            freePositions.remove((Integer) positionCurrentNode);
+            positionCurrentNode = nextPosition;
+            shortestPath[i+1] = allAddresses.get(nextPosition);
+        }
+
+        return shortestPath;
+    }
+
+    private int getNearestAddress(int positionCurrentNode, ArrayList<Address> allNodes,
+                                  ArrayList<Integer> freePositions) {
+        ArrayList<Integer> copyOfFreePositions = new ArrayList<>(freePositions);
+        if (copyOfFreePositions.contains((Integer) positionCurrentNode)) {
+            copyOfFreePositions.remove((Integer) positionCurrentNode);
+        }
+        int positionOfNearestAddress = copyOfFreePositions.get(0);
+
+        if (copyOfFreePositions.size() > 1) {
+            Address next;
+            Address currentPosition = allNodes.get(positionCurrentNode);
+            Address nearestAddress = allNodes.get(copyOfFreePositions.get(0));
+            float nearestDistance[] = new float[2];
+            float currentDistance[] = new float[2];
+
+            Location.distanceBetween(
+                    currentPosition.getLatitude(), currentPosition.getLongitude(),
+                    nearestAddress.getLatitude(), nearestAddress.getLongitude(),
+                    nearestDistance);
+
+            for (int i = 1; i < copyOfFreePositions.size(); i++) {
+
+                next = allNodes.get(copyOfFreePositions.get(i));
+
+                Location.distanceBetween(
+                        currentPosition.getLatitude(), currentPosition.getLongitude(),
+                        next.getLatitude(), next.getLongitude(), currentDistance);
+
+                if (currentDistance[0] < nearestDistance[0]) {
+                    positionOfNearestAddress = copyOfFreePositions.get(i);
+                    nearestDistance[0] = currentDistance[0];
+                }
+            }
+        }
+        return positionOfNearestAddress;
+    }
 
     public class SelectArralAdapter extends ArrayAdapter<SearchSession> {
         private LayoutInflater inflater;
 
-        private ArrayList<SearchSession> searchedSession;
+        private ArrayList<SearchSession> mSearchedSession;
 
-        public SelectArralAdapter(Context context, List<SearchSession> planetList) {
-            super(context, R.layout.simple_row_appointment_list, R.id.noteTextView, planetList);
+        public SelectArralAdapter(Context context, List<SearchSession> searchedSession) {
+            super(context, R.layout.simple_row_appointment_list, R.id.noteTextView, searchedSession);
             // Cache the LayoutInflate to avoid asking for a new one each time.
             inflater = LayoutInflater.from(context);
-            this.searchedSession = (ArrayList<SearchSession>) planetList;
+            this.mSearchedSession = (ArrayList<SearchSession>) searchedSession;
         }
 
         public void refresh(ArrayList<SearchSession> items) {
-//            this.searchedSession.clear();
-            this.searchedSession = new ArrayList<>(items);
-            this.searchedSession.clear();
-            this.searchedSession = items;
+            this.mSearchedSession = new ArrayList<>(items);
+            this.mSearchedSession.clear();
+            this.mSearchedSession = items;
             this.notifyDataSetChanged();
         }
 
@@ -517,11 +641,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return searchedSession.size();
+            return mSearchedSession.size();
         }
-    }
-
-    private Context getActivity() {
-        return this;
     }
 }
