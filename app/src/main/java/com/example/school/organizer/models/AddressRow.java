@@ -12,25 +12,12 @@ public class AddressRow implements Serializable{
     private String title = "";
     private boolean isChecked = false;
 
-    AddressRow() {
-
-    }
-
     public AddressRow(String title) {
         this.title = title;
     }
 
-    public AddressRow(String title, boolean isChecked) {
-        this.title = title;
-        this.isChecked = isChecked;
-    }
-
     public String getTitle() {
         return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public boolean isChecked() {

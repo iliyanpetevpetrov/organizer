@@ -21,17 +21,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.school.organizer.R;
+import com.example.school.organizer.layouts.SelectAppointmentArrayAdapter;
+import com.example.school.organizer.listeners.LocationListenerOnMove;
 import com.example.school.organizer.models.SearchSession;
 import com.example.school.organizer.models.SelectViewHolder;
 import com.example.school.organizer.settings.TinyDB;
@@ -40,7 +37,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 
@@ -54,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     LocationManager locationManager = null;
     Bundle bndl = new Bundle();
     private ListView appointmentsListView;
-    private SelectArrayAdapter listAdapter;
+    private SelectAppointmentArrayAdapter listAdapter;
     private boolean isOn = false;
 
     @Override
@@ -95,22 +91,16 @@ public class MainActivity extends AppCompatActivity {
         this.isOn = tinydb.getBoolean("isOn");
         changeBtnTurnOffOnColor(isOn);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        fab.setOnClickListener(view -> {
 
-                Intent mIntent = new Intent(MainActivity.this, MapsActivity.class);
-                startActivity(mIntent);
-            }
+            Intent mIntent = new Intent(MainActivity.this, MapsActivity.class);
+            startActivity(mIntent);
         });
 
-        fab.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                Snackbar.make(v, "Add new appointment", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                return true;
-            }
+        fab.setOnLongClickListener(v -> {
+            Snackbar.make(v, "Add new appointment", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            return true;
         });
 
         //Get and initialize ListView
@@ -121,6 +111,69 @@ public class MainActivity extends AppCompatActivity {
         appointmentsListView.setClickable(true);
         appointmentsListView.setLongClickable(true);
 
+        setListViewLongClickListener();
+
+        setListViewClickListener();
+
+        listAdapter = new SelectAppointmentArrayAdapter(this, appointmentsTodoList);
+
+        appointmentsListView.setAdapter(listAdapter);
+
+        listAdapter.notifyDataSetChanged();
+
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        LocationListener locationListener = new LocationListenerOnMove(this);
+        tinydb.putListSearchSession("appointmentsTodoList", appointmentsTodoList);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            //
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        123);
+            }
+            Toast.makeText(MainActivity.this, "Gps access is denied.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 20, 20, locationListener);
+    }
+
+    public boolean isOn() {
+        return isOn;
+    }
+
+    public ArrayList<SearchSession> getAppointmentsTodoList() {
+        return appointmentsTodoList;
+    }
+
+    public SelectAppointmentArrayAdapter getListAdapter() {
+        return listAdapter;
+    }
+
+    private void setListViewClickListener() {
+        appointmentsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                SearchSession searchSession = listAdapter.getItem(position);
+                searchSession.toggleChecked();
+                SelectViewHolder viewHolder = (SelectViewHolder) view.getTag();
+
+                viewHolder.getCheckBox().setChecked(searchSession.isSearchOn());
+            }
+
+        });
+    }
+
+    private void setListViewLongClickListener() {
         appointmentsListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
@@ -180,133 +233,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-
-        appointmentsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                SearchSession searchSession = listAdapter.getItem(position);
-                searchSession.toggleChecked();
-                SelectViewHolder viewHolder = (SelectViewHolder) view.getTag();
-
-                viewHolder.getCheckBox().setChecked(searchSession.isSearchOn());
-            }
-
-        });
-
-        listAdapter = new SelectArrayAdapter(this, appointmentsTodoList);
-
-        appointmentsListView.setAdapter(listAdapter);
-
-        listAdapter.notifyDataSetChanged();
-
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-        LocationListener locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(final Location location) {
-
-                if (isOn) {
-//                    for (final SearchSession adr : appointmentsTodoList) {
-                    for (int counter = 0; counter < appointmentsTodoList.size(); counter++) {
-                        final int innerCounter = counter;
-                        final SearchSession currentAddress = appointmentsTodoList.get(counter);
-
-                        if (currentAddress.isSearchOn() &&
-                                !currentAddress.isMute() &&
-                                currentAddress.isNear(location, 1000)) {
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-                            String message = String.format("You are %.0f meters away from \"%s\"" +
-                                            " appointment",
-                                    currentAddress.getDistanceBetweenLocation(location)[0],
-                                    currentAddress.getNote());
-
-                            builder.setPositiveButton("Drive me to", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Address nearestAdr = currentAddress.getNearestAddress(location);
-                                    if (nearestAdr != null) {
-                                        Uri gmmIntentUri = Uri.parse("google.navigation:q=" +
-                                                nearestAdr.getLatitude() + "," +
-                                                nearestAdr.getLongitude());
-                                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                                        mapIntent.setPackage("com.google.android.apps.maps");
-                                        startActivity(mapIntent);
-                                    }
-                                }
-                            });
-
-                            builder.setNegativeButton("Mute for 5 minutes", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    appointmentsTodoList.get(innerCounter).mute();
-                                    showMessageForMutedAppointment(innerCounter);
-                                }
-                            });
-
-                            builder.setNeutralButton("Mark as done", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    appointmentsTodoList.get(innerCounter).toggleChecked();
-                                    listAdapter.notifyDataSetChanged();
-                                }
-                            });
-
-                            // 2. Chain together various setter methods to set the dialog characteristics
-                            builder.setMessage(message).setTitle("Appointment near you is found.");
-
-                            // 3. Get the AlertDialog from create()
-                            AlertDialog dialog = builder.create();
-
-                            dialog.show();
-
-                            break;
-                        }
-                    }
-                }
-
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        };
-        tinydb.putListSearchSession("appointmentsTodoList", appointmentsTodoList);
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            //
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                        123);
-            }
-            Toast.makeText(MainActivity.this, "Gps access is denied.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 20, 20, locationListener);
     }
 
-    private void showMessageForMutedAppointment(int position) {
+    public void showMessageForMutedAppointment(int position) {
         SimpleDateFormat formatter =
                 new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
@@ -489,7 +418,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private Context getActivity() {
+    public Context getActivity() {
         return this;
     }
 
@@ -577,75 +506,4 @@ public class MainActivity extends AppCompatActivity {
         return positionOfNearestAddress;
     }
 
-    public static class SelectArrayAdapter extends ArrayAdapter<SearchSession> {
-        private final LayoutInflater inflater;
-
-        private ArrayList<SearchSession> mSearchedSession;
-
-        public SelectArrayAdapter(Context context, List<SearchSession> searchedSession) {
-            super(context, R.layout.simple_row_appointment_list, R.id.noteTextView, searchedSession);
-            // Cache the LayoutInflate to avoid asking for a new one each time.
-            inflater = LayoutInflater.from(context);
-            this.mSearchedSession = (ArrayList<SearchSession>) searchedSession;
-        }
-
-        public void refresh(ArrayList<SearchSession> items) {
-            this.mSearchedSession = new ArrayList<>(items);
-            this.mSearchedSession.clear();
-            this.mSearchedSession = items;
-            this.notifyDataSetChanged();
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            // Planet to display
-            SearchSession planet = (SearchSession) this.getItem(position);
-
-            // The child views in each row.
-            CheckBox checkBox;
-            TextView textView;
-
-            // Create a new row view
-            if (convertView == null) {
-                convertView = inflater.inflate(R.layout.simple_row_appointment_list, null);
-
-                // Find the child views.
-                textView = (TextView) convertView.findViewById(R.id.noteTextView);
-                checkBox = (CheckBox) convertView.findViewById(R.id.checkBoxIsOn);
-                // Optimization: Tag the row with it's child views, so we don't
-                // have to
-                // call findViewById() later when we reuse the row.
-                convertView.setTag(new SelectViewHolder(textView, checkBox));
-                // If CheckBox is toggled, update the planet it is tagged with.
-                checkBox.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        CheckBox cb = (CheckBox) v;
-                        SearchSession planet = (SearchSession) cb.getTag();
-                        planet.setSearchOn(cb.isChecked());
-                    }
-                });
-            }
-            // Reuse existing row view
-            else {
-                // Because we use a ViewHolder, we avoid having to call
-                // findViewById().
-                SelectViewHolder viewHolder = (SelectViewHolder) convertView.getTag();
-                checkBox = viewHolder.getCheckBox();
-                textView = viewHolder.getTextView();
-            }
-
-            // Tag the CheckBox with the Planet it is displaying, so that we can
-            // access the planet in onClick() when the CheckBox is toggled.
-            checkBox.setTag(planet);
-            // Display planet data
-            checkBox.setChecked(planet.isSearchOn());
-            textView.setText(planet.getSpannableToString());
-            return convertView;
-        }
-
-        @Override
-        public int getCount() {
-            return mSearchedSession.size();
-        }
-    }
 }

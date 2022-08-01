@@ -2,9 +2,8 @@ package com.example.school.organizer.Utils;
 
 import android.location.Address;
 
-import com.example.school.organizer.activities.MapsActivity;
+import com.example.school.organizer.layouts.SelectLocationsArrayAdapter;
 import com.example.school.organizer.models.AddressRow;
-import com.example.school.organizer.models.SelectViewHolder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,8 +13,7 @@ import java.util.List;
  * Created by Iliyan Petrov on 8/28/2016.
  * Helper class when working with custom ListView and custom Adapter.
  *
- * @see MapsActivity.SelectArrayAdapter
- * @see SelectViewHolder
+ * @see SelectLocationsArrayAdapter
  */
 public class Utils {
 

@@ -43,16 +43,8 @@ public class SearchSession implements Serializable {
         return searchedAddresses;
     }
 
-    public void setSearchedAddresses(ArrayList<Address> searchedAddresses) {
-        this.searchedAddresses = searchedAddresses;
-    }
-
     public String getNote() {
         return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
     }
 
     public boolean isSearchOn() {
