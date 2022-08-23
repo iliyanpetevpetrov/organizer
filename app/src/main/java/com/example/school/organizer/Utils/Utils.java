@@ -53,12 +53,16 @@ public class Utils {
             for (int i = target.size(); i < source.size(); i++) {
                 Address object = source.get(i);
 
-                for (int j = 0; j < object.getMaxAddressLineIndex(); j++) {
-                    addressLine.append(object.getAddressLine(j)).append(" ");
+//                for (int j = 0; j < object.getMaxAddressLineIndex(); j++) {
+//                    addressLine.append(object.getAddressLine(j)).append(" ");
+//                }
+                String fullAddress = object.getAddressLine(0);
+                if (fullAddress != null) {
+                    addressLine.append(fullAddress);
                 }
                 target.add(new AddressRow(counter + ": Country: " + object.getCountryName() +
                         "\nAddress: " + addressLine));
-                addressLine.delete( 0, addressLine.length() );
+//                addressLine.delete( 0, addressLine.length() );
 
                 counter++;
             }

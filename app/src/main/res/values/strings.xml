@@ -52,7 +52,7 @@
     <string-array name="item_menu">
         <item>Activate</item>
         <item>Deactivate</item>
-        <item>Edit</item>
+        <item>Edit selected points of interest</item>
         <item>Delete</item>
         <item>Mute for 5 minutes</item>
         <item>Unmute</item>

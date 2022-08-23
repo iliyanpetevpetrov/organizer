@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 
-
 public class MainActivity extends AppCompatActivity {
 
     public static String DEFAULT_EMPTY_STRING_APPOINTMENT_LIST = "1. Click me.\n" +
@@ -145,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 20, 20, locationListener);
     }
+
 
     public boolean isOn() {
         return isOn;

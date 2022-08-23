@@ -23,10 +23,12 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'org.testng:testng:6.9.6'
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support:appcompat-v7:24.2.0'
     implementation 'com.google.android.gms:play-services:9.4.0'
     implementation 'com.android.support:support-v4:24.2.0'
     implementation 'com.android.support:design:24.2.0'
     implementation files('libs/gson-2.4.jar')
+    testImplementation "org.mockito:mockito-core:3.+"
 }
