@@ -2,7 +2,9 @@ package com.example.school.organizer.Utils;
 
 import android.location.Address;
 
-import com.example.school.organizer.AddressRow;
+import com.example.school.organizer.activities.MapsActivity;
+import com.example.school.organizer.models.AddressRow;
+import com.example.school.organizer.models.SelectViewHolder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,8 +14,8 @@ import java.util.List;
  * Created by Iliyan Petrov on 8/28/2016.
  * Helper class when working with custom ListView and custom Adapter.
  *
- * @see com.example.school.organizer.MapsActivity.SelectArralAdapter
- * @see com.example.school.organizer.SelectViewHolder
+ * @see MapsActivity.SelectArrayAdapter
+ * @see SelectViewHolder
  */
 public class Utils {
 
@@ -54,7 +56,7 @@ public class Utils {
                 Address object = source.get(i);
 
                 for (int j = 0; j < object.getMaxAddressLineIndex(); j++) {
-                    addressLine.append(object.getAddressLine(j) + " ");
+                    addressLine.append(object.getAddressLine(j)).append(" ");
                 }
                 target.add(new AddressRow(counter + ": Country: " + object.getCountryName() +
                         "\nAddress: " + addressLine));

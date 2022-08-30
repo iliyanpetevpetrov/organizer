@@ -1,4 +1,4 @@
-package com.example.school.organizer;
+package com.example.school.organizer.models;
 
 import com.google.android.gms.maps.model.LatLng;
 

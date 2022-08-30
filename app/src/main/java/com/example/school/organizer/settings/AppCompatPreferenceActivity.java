@@ -1,4 +1,4 @@
-package com.example.school.organizer;
+package com.example.school.organizer.settings;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

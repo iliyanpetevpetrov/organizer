@@ -1,4 +1,4 @@
-package com.example.school.organizer;
+package com.example.school.organizer.models;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -110,7 +110,7 @@ public class SearchSession implements Serializable {
      * @return true if radiusInMeter >= to the distance from the location, otherwise it returns false
      */
     public boolean isNear(Location location, float radiusInMeter) {
-        float distance[] = new float[2];
+        float[] distance = new float[2];
         Address nearestAddress = getNearestAddress(location);
         if ( nearestAddress == null ) {
             return false;

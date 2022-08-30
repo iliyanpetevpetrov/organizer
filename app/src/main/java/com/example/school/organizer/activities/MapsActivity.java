@@ -1,4 +1,4 @@
-package com.example.school.organizer;
+package com.example.school.organizer.activities;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -19,6 +19,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.school.organizer.R;
+import com.example.school.organizer.models.SearchSession;
+import com.example.school.organizer.models.SelectViewHolder;
+import com.example.school.organizer.settings.TinyDB;
+import com.example.school.organizer.models.AddressRow;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -111,7 +116,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
         });
-        listAdapter = new SelectArralAdapter(this, addressRows);
+        listAdapter = new SelectArrayAdapter(this, addressRows);
         listLocations.setAdapter(listAdapter);
     }
 
@@ -148,7 +153,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         listLocations.setVisibility(View.VISIBLE);
 
-        if(location != null || !location.isEmpty()) {
+        if(location != null && !location.isEmpty()) {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
             if( addressList.size() != 0 ) {
@@ -157,7 +162,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             try {
                 addressList.addAll(geocoder.getFromLocationName(location, 10));
-
                 convertArrayAddressToArrayString(addressList, addressRows);
 
                 //Update
@@ -176,12 +180,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
-
-    public static class SelectArralAdapter extends ArrayAdapter<AddressRow> {
+    public static class SelectArrayAdapter extends ArrayAdapter<AddressRow> {
         private LayoutInflater inflater;
 
-        public SelectArralAdapter(Context context, List<AddressRow> list) {
+        public SelectArrayAdapter(Context context, List<AddressRow> list) {
             super(context, R.layout.simple_row_location_search, R.id.rowTextView, list);
             // Cache the LayoutInflate to avoid asking for a new one each time.
             inflater = LayoutInflater.from(context);

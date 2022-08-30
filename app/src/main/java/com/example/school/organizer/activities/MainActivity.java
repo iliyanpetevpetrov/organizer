@@ -1,4 +1,4 @@
-package com.example.school.organizer;
+package com.example.school.organizer.activities;
 
 import android.Manifest;
 import android.app.Dialog;
@@ -31,6 +31,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.school.organizer.R;
+import com.example.school.organizer.models.SearchSession;
+import com.example.school.organizer.models.SelectViewHolder;
+import com.example.school.organizer.settings.TinyDB;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     LocationManager locationManager = null;
     Bundle bndl = new Bundle();
     private ListView appointmentsListView;
-    private SelectArralAdapter listAdapter;
+    private SelectArrayAdapter listAdapter;
     private boolean isOn = false;
 
     @Override
@@ -189,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        listAdapter = new SelectArralAdapter(this, appointmentsTodoList);
+        listAdapter = new SelectArrayAdapter(this, appointmentsTodoList);
 
         appointmentsListView.setAdapter(listAdapter);
 
@@ -462,8 +467,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(mapIntent);
             } else {
                 Toast.makeText(MainActivity.this, "Please, enable one or more " +
-                        "appointments.", Toast
-                        .LENGTH_LONG).show();
+                        "appointments.", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -573,12 +577,12 @@ public class MainActivity extends AppCompatActivity {
         return positionOfNearestAddress;
     }
 
-    public class SelectArralAdapter extends ArrayAdapter<SearchSession> {
-        private LayoutInflater inflater;
+    public static class SelectArrayAdapter extends ArrayAdapter<SearchSession> {
+        private final LayoutInflater inflater;
 
         private ArrayList<SearchSession> mSearchedSession;
 
-        public SelectArralAdapter(Context context, List<SearchSession> searchedSession) {
+        public SelectArrayAdapter(Context context, List<SearchSession> searchedSession) {
             super(context, R.layout.simple_row_appointment_list, R.id.noteTextView, searchedSession);
             // Cache the LayoutInflate to avoid asking for a new one each time.
             inflater = LayoutInflater.from(context);
