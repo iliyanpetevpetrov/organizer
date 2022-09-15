@@ -24,6 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -140,6 +141,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
+        LatLng latLng = new LatLng(42.658183, 23.357363);
+        float zoom = 15;
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
     }
 
     public void onSearch(View view) {
@@ -149,14 +153,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         listLocations.setVisibility(View.VISIBLE);
 
         if(location != null && !location.isEmpty()) {
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            Geocoder geocoder = new Geocoder(this, new Locale("BG", "bg"));
 
             if( addressList.size() != 0 ) {
                 leaveOnlyCheckedAddresses(addressList, addressRows);
             }
 
             try {
-                addressList.addAll(geocoder.getFromLocationName(location, 10));
+                addressList.addAll(
+                        geocoder.getFromLocationName(location,
+                                20, 42.631786, 23.213425,
+                                42.727697, 23.448257));
                 convertArrayAddressToArrayString(addressList, addressRows);
 
                 //Update
@@ -168,7 +175,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(addressList != null && addressList.size() > 0) {
                 Address address = addressList.get(0);
                 LatLng latLngSearch = new LatLng(address.getLatitude(), address.getLongitude());
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(latLngSearch));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngSearch, 15));
             } else {
                 Toast.makeText(MapsActivity.this, "No results found for " + location, Toast.LENGTH_SHORT).show();
             }

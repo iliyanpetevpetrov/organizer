@@ -48,7 +48,6 @@ public class Utils {
         StringBuilder addressLine = new StringBuilder();
 
         if (source != null && target != null) {
-            int counter = 1;
 
             for (int i = target.size(); i < source.size(); i++) {
                 Address object = source.get(i);
@@ -60,11 +59,8 @@ public class Utils {
                 if (fullAddress != null) {
                     addressLine.append(fullAddress);
                 }
-                target.add(new AddressRow(counter + ": Country: " + object.getCountryName() +
-                        "\nAddress: " + addressLine));
+                target.add(new AddressRow("Address: " + addressLine));
 //                addressLine.delete( 0, addressLine.length() );
-
-                counter++;
             }
         }
     }
